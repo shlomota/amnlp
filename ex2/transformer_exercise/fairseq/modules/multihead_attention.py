@@ -37,9 +37,11 @@ class MultiheadAttention(nn.Module):
         encoder_decoder_attention=False,
         q_noise=0.0,
         qn_block_size=8,
+        mask_head=None
     ):
         super().__init__()
         self.embed_dim = embed_dim
+        self.mask_head = mask_head
         self.kdim = kdim if kdim is not None else embed_dim
         self.vdim = vdim if vdim is not None else embed_dim
         self.qkv_same_dim = self.kdim == embed_dim and self.vdim == embed_dim
@@ -170,6 +172,17 @@ class MultiheadAttention(nn.Module):
             and not torch.jit.is_scripting()
         ):
             assert key is not None and value is not None
+            if not self.training:
+                #mask a head
+
+                N = query.shape[1]
+                if not attn_mask:
+                    attn_mask = torch.zeros((N*self.num_heads, query.shape[0], key.shape[0]))
+
+
+                for i in range(N):
+                    attn_mask[i * self.num_heads + self.mask_head] = torch.ones((query.shape[0], key.shape[0]), dtype=torch.bool)
+
             return F.multi_head_attention_forward(
                 query,
                 key,
@@ -193,6 +206,7 @@ class MultiheadAttention(nn.Module):
                 k_proj_weight=self.k_proj.weight,
                 v_proj_weight=self.v_proj.weight,
             )
+
 
         if incremental_state is not None:
             saved_state = self._get_input_buffer(incremental_state)

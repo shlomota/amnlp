@@ -107,7 +107,16 @@ class TransformerModel(FairseqEncoderDecoderModel):
     def __init__(self, args, encoder, decoder):
         super().__init__(encoder, decoder)
         self.args = args
+        if args.mask_layer_type == "enc-enc":
+            encoder.mask_layer = args.mask_layer
+        elif args.mask_layer_type == "enc-dec":
+            encoder.mask_layer = args.mask_layer
+        elif args.mask_layer_type == "enc-enc":
+            decoder.mask_layer = args.mask_layer
+
         self.supports_align_args = True
+
+    #"enc-dec", "enc-enc" or "dec-dec"
 
     @staticmethod
     def add_args(parser):

@@ -12,3 +12,5 @@ from fairseq_cli.train import cli_main
 
 if __name__ == "__main__":
     cli_main()
+
+# python fairseq_cli/preprocess.py --source-lang de --target-lang en --trainpref $TEXT/train --validpref $TEXT/valid --testpref $TEXT/test --destdir data-bin/iwslt14.tokenized.de-en --workers 20

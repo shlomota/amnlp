@@ -109,14 +109,17 @@ class TransformerModel(FairseqEncoderDecoderModel):
         self.args = args
         if args.mask_layer_type == "enc-enc":
             encoder.mask_layer = args.mask_layer
+            encoder.mask_head = args.mask_head
         elif args.mask_layer_type == "enc-dec":
-            encoder.mask_layer = args.mask_layer
-        elif args.mask_layer_type == "enc-enc":
             decoder.mask_layer = args.mask_layer
+            decoder.mask_head = args.mask_head
+            decoder.mask_layer_type = args.mask_layer_type
+        elif args.mask_layer_type == "dec-dec":
+            decoder.mask_layer = args.mask_layer
+            decoder.mask_head = args.mask_head
+            decoder.mask_layer_type = args.mask_layer_type
 
         self.supports_align_args = True
-
-    #"enc-dec", "enc-enc" or "dec-dec"
 
     @staticmethod
     def add_args(parser):
@@ -319,6 +322,8 @@ class TransformerModel(FairseqEncoderDecoderModel):
         features_only: bool = False,
         alignment_layer: Optional[int] = None,
         alignment_heads: Optional[int] = None,
+        mask_head=None,
+        mask_layer_type=None
     ):
         """
         Run the forward pass for an encoder-decoder model.
@@ -541,9 +546,11 @@ class TransformerEncoder(FairseqEncoder):
             encoder_states.append(x)
 
         # encoder layers
-        for layer in self.layers:
+        for i, layer in enumerate(self.layers):
+
             x = layer(
-                x, encoder_padding_mask=encoder_padding_mask if has_pads else None
+                x, encoder_padding_mask=encoder_padding_mask if has_pads else None,
+                mask_head = self.mask_head if i == self.mask_layer else None
             )
             if return_all_hiddens:
                 assert encoder_states is not None
@@ -964,6 +971,8 @@ class TransformerDecoder(FairseqIncrementalDecoder):
                 self_attn_padding_mask=self_attn_padding_mask,
                 need_attn=bool((idx == alignment_layer)),
                 need_head_weights=bool((idx == alignment_layer)),
+                mask_head=self.mask_head if idx == self.mask_layer else None,
+                mask_layer_type=self.mask_layer_type
             )
             inner_states.append(x)
             if layer_attn is not None and idx == alignment_layer:

@@ -103,7 +103,7 @@ class TransformerEncoderLayer(nn.Module):
                     state_dict["{}.{}.{}".format(name, new, m)] = state_dict[k]
                     del state_dict[k]
 
-    def forward(self, x, encoder_padding_mask: Optional[Tensor], attn_mask: Optional[Tensor] = None):
+    def forward(self, x, encoder_padding_mask: Optional[Tensor], attn_mask: Optional[Tensor] = None, mask_head = None):
         """
         Args:
             x (Tensor): input to the layer of shape `(seq_len, batch, embed_dim)`
@@ -137,6 +137,7 @@ class TransformerEncoderLayer(nn.Module):
             key_padding_mask=encoder_padding_mask,
             need_weights=False,
             attn_mask=attn_mask,
+            mask_head=mask_head
         )
         x = self.dropout_module(x)
         x = self.residual_connection(x, residual)
@@ -268,6 +269,7 @@ class TransformerDecoderLayer(nn.Module):
             encoder_decoder_attention=True,
             q_noise=self.quant_noise,
             qn_block_size=self.quant_noise_block_size,
+
         )
 
     def prepare_for_onnx_export_(self):
@@ -288,6 +290,8 @@ class TransformerDecoderLayer(nn.Module):
         self_attn_padding_mask: Optional[torch.Tensor] = None,
         need_attn: bool = False,
         need_head_weights: bool = False,
+        mask_head = None,
+        mask_layer_type = None
     ):
         """
         Args:
@@ -319,6 +323,8 @@ class TransformerDecoderLayer(nn.Module):
             assert incremental_state is not None
             self.self_attn._set_input_buffer(incremental_state, saved_state)
         _self_attn_input_buffer = self.self_attn._get_input_buffer(incremental_state)
+
+        print('NAAMAAA self.cross_self_attention=', self.cross_self_attention)
         if self.cross_self_attention and not (
             incremental_state is not None
             and _self_attn_input_buffer is not None
@@ -343,6 +349,7 @@ class TransformerDecoderLayer(nn.Module):
         else:
             y = x
 
+        #NAAMAAAAA dec-dec
         x, attn = self.self_attn(
             query=x,
             key=y,
@@ -351,6 +358,7 @@ class TransformerDecoderLayer(nn.Module):
             incremental_state=incremental_state,
             need_weights=False,
             attn_mask=self_attn_mask,
+            mask_head=mask_head if mask_layer_type == 'dec-dec' else None
         )
         x = self.dropout_module(x)
         x = self.residual_connection(x, residual)
@@ -372,6 +380,7 @@ class TransformerDecoderLayer(nn.Module):
                 assert incremental_state is not None
                 self.encoder_attn._set_input_buffer(incremental_state, saved_state)
 
+            # NAAMAAAAA Come back here and add enc-dec mask, this is probably the cross attention
             x, attn = self.encoder_attn(
                 query=x,
                 key=encoder_out,
@@ -381,6 +390,7 @@ class TransformerDecoderLayer(nn.Module):
                 static_kv=True,
                 need_weights=need_attn or (not self.training and self.need_attn),
                 need_head_weights=need_head_weights,
+                mask_head=mask_head if mask_layer_type == 'enc-dec' else None
             )
             x = self.dropout_module(x)
             x = self.residual_connection(x, residual)

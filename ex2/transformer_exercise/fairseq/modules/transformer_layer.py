@@ -324,7 +324,6 @@ class TransformerDecoderLayer(nn.Module):
             self.self_attn._set_input_buffer(incremental_state, saved_state)
         _self_attn_input_buffer = self.self_attn._get_input_buffer(incremental_state)
 
-        print('NAAMAAA self.cross_self_attention=', self.cross_self_attention)
         if self.cross_self_attention and not (
             incremental_state is not None
             and _self_attn_input_buffer is not None

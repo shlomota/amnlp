@@ -160,6 +160,7 @@ class MultiheadAttention(nn.Module):
                 assert value is not None
                 assert src_len, bsz == value.shape[:2]
 
+        print('NAAMA In multihead attention forward!')
         if (
             not self.enable_fairseq_version
             and not self.onnx_trace

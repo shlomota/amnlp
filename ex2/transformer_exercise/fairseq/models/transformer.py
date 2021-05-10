@@ -550,7 +550,7 @@ class TransformerEncoder(FairseqEncoder):
 
             x = layer(
                 x, encoder_padding_mask=encoder_padding_mask if has_pads else None,
-                mask_head=self.mask_head if self.mask_layer is not None and i == self.mask_layer else None
+                mask_head=self.mask_head if hasattr(self, 'mask_layer') and i == self.mask_layer else None
             )
             if return_all_hiddens:
                 assert encoder_states is not None
@@ -971,7 +971,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
                 self_attn_padding_mask=self_attn_padding_mask,
                 need_attn=bool((idx == alignment_layer)),
                 need_head_weights=bool((idx == alignment_layer)),
-                mask_head=self.mask_head if self.mask_layer is not None and idx == self.mask_layer else None,
+                mask_head=self.mask_head if hasattr(self, 'mask_layer') and idx == self.mask_layer else None,
                 mask_layer_type=self.mask_layer_type
             )
             inner_states.append(x)

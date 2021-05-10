@@ -366,11 +366,6 @@ class MultiheadAttention(nn.Module):
 
             print('attn_weights.shape=', attn_weights.shape)
 
-
-        if mask_head is not None:
-
-            attn_weights.where()
-
         print('self.num_heads=', self.num_heads)
         if key_padding_mask is not None:
             print('If 11')

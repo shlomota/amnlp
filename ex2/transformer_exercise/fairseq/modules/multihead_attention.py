@@ -171,6 +171,7 @@ class MultiheadAttention(nn.Module):
             and not torch.jit.is_scripting()
         ):
             assert key is not None and value is not None
+            print('NAAMAAA self.training=', self.training)
             if not self.training:
                 #mask a head
                 print('NAAMAAAA self.mask_head=', self.mask_head)

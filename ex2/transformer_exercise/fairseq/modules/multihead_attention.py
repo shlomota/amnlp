@@ -360,7 +360,7 @@ class MultiheadAttention(nn.Module):
 
         if attn_mask is not None:
             print('If 10')
-            attn_mask = attn_mask.unsqueeze(0)
+            # attn_mask = attn_mask.unsqueeze(0)
             if self.onnx_trace:
                 attn_mask = attn_mask.repeat(attn_weights.size(0), 1, 1)
             print('attn_weights.shape=',attn_weights.shape)

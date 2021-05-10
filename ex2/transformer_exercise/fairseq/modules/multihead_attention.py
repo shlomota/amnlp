@@ -160,9 +160,9 @@ class MultiheadAttention(nn.Module):
                 assert value is not None
                 assert src_len, bsz == value.shape[:2]
 
-        print('NAAMA In multihead attention forward!, self.training=', self.training, 'self.mask_head=', mask_head)
+        print('NAAMA In multihead attention forward!, self.training=', self.training, 'mask_head=', mask_head)
         N = query.shape[1]
-        if not self.training and self.mask_head is not None:
+        if not self.training and mask_head is not None:
             if not attn_mask:
                 attn_mask = torch.zeros((N * self.num_heads, query.shape[0], key.shape[0]))
 

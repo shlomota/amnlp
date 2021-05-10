@@ -372,6 +372,9 @@ class TransformerEncoder(FairseqEncoder):
 
     def __init__(self, args, dictionary, embed_tokens):
         self.args = args
+        self.mask_head = None
+        self.mask_layer = None
+        self.mask_layer_type = None
         super().__init__(dictionary)
         self.register_buffer("version", torch.Tensor([3]))
 
@@ -550,7 +553,7 @@ class TransformerEncoder(FairseqEncoder):
 
             x = layer(
                 x, encoder_padding_mask=encoder_padding_mask if has_pads else None,
-                mask_head=self.mask_head if hasattr(self, 'mask_layer') and i == self.mask_layer else None
+                mask_head=self.mask_head if i == self.mask_layer else None
             )
             if return_all_hiddens:
                 assert encoder_states is not None
@@ -678,6 +681,9 @@ class TransformerDecoder(FairseqIncrementalDecoder):
         output_projection=None,
     ):
         self.args = args
+        self.mask_head = None
+        self.mask_layer = None
+        self.mask_layer_type = None
         super().__init__(dictionary)
         self.register_buffer("version", torch.Tensor([3]))
         self._future_mask = torch.empty(0)
@@ -971,7 +977,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
                 self_attn_padding_mask=self_attn_padding_mask,
                 need_attn=bool((idx == alignment_layer)),
                 need_head_weights=bool((idx == alignment_layer)),
-                mask_head=self.mask_head if hasattr(self, 'mask_layer') and idx == self.mask_layer else None,
+                mask_head=self.mask_head if idx == self.mask_layer else None,
                 mask_layer_type=self.mask_layer_type
             )
             inner_states.append(x)

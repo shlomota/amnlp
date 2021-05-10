@@ -367,9 +367,10 @@ class MultiheadAttention(nn.Module):
             if self.onnx_trace:
                 attn_mask = attn_mask.repeat(attn_weights.size(0), 1, 1)
             print('attn_weights.shape=',attn_weights.shape)
-            print('all zeros? ', torch.sum(attn_mask))
+            print('all zeros 2? ', torch.sum(attn_mask))
             attn_weights += attn_mask
 
+        print('self.num_heads=', self.num_heads)
         if key_padding_mask is not None:
             print('If 11')
             # don't attend to padding symbols

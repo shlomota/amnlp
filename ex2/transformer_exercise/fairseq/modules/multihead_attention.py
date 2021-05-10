@@ -209,6 +209,7 @@ class MultiheadAttention(nn.Module):
 
 
         if incremental_state is not None:
+            print('If 2')
             saved_state = self._get_input_buffer(incremental_state)
             if saved_state is not None and "prev_key" in saved_state:
                 # previous time steps are cached - no need to recompute
@@ -220,10 +221,12 @@ class MultiheadAttention(nn.Module):
             saved_state = None
 
         if self.self_attention:
+            print('If 3')
             q = self.q_proj(query)
             k = self.k_proj(query)
             v = self.v_proj(query)
         elif self.encoder_decoder_attention:
+            print('If 4')
             # encoder-decoder attention
             q = self.q_proj(query)
             if key is None:
@@ -234,6 +237,7 @@ class MultiheadAttention(nn.Module):
                 v = self.v_proj(key)
 
         else:
+            print('If 5')
             assert key is not None and value is not None
             q = self.q_proj(query)
             k = self.k_proj(key)
@@ -241,6 +245,7 @@ class MultiheadAttention(nn.Module):
         q *= self.scaling
 
         if self.bias_k is not None:
+            print('If 6')
             assert self.bias_v is not None
             k = torch.cat([k, self.bias_k.repeat(1, bsz, 1)])
             v = torch.cat([v, self.bias_v.repeat(1, bsz, 1)])
@@ -263,6 +268,7 @@ class MultiheadAttention(nn.Module):
             .transpose(0, 1)
         )
         if k is not None:
+            print('If 7')
             k = (
                 k.contiguous()
                 .view(-1, bsz * self.num_heads, self.head_dim)
@@ -276,6 +282,7 @@ class MultiheadAttention(nn.Module):
             )
 
         if saved_state is not None:
+            print('If 8')
             # saved states are stored with shape (bsz, num_heads, seq_len, head_dim)
             if "prev_key" in saved_state:
                 _prev_key = saved_state["prev_key"]
@@ -327,6 +334,7 @@ class MultiheadAttention(nn.Module):
             assert key_padding_mask.size(1) == src_len
 
         if self.add_zero_attn:
+            print('If 9')
             assert v is not None
             src_len += 1
             k = torch.cat([k, k.new_zeros((k.size(0), 1) + k.size()[2:])], dim=1)
@@ -352,12 +360,14 @@ class MultiheadAttention(nn.Module):
         assert list(attn_weights.size()) == [bsz * self.num_heads, tgt_len, src_len]
 
         if attn_mask is not None:
+            print('If 10')
             attn_mask = attn_mask.unsqueeze(0)
             if self.onnx_trace:
                 attn_mask = attn_mask.repeat(attn_weights.size(0), 1, 1)
             attn_weights += attn_mask
 
         if key_padding_mask is not None:
+            print('If 11')
             # don't attend to padding symbols
             attn_weights = attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
             if not is_tpu:
@@ -372,6 +382,7 @@ class MultiheadAttention(nn.Module):
             attn_weights = attn_weights.view(bsz * self.num_heads, tgt_len, src_len)
 
         if before_softmax:
+            print('If 12')
             return attn_weights, v
 
         attn_weights_float = utils.softmax(
@@ -384,6 +395,7 @@ class MultiheadAttention(nn.Module):
         attn = torch.bmm(attn_probs, v)
         assert list(attn.size()) == [bsz * self.num_heads, tgt_len, self.head_dim]
         if self.onnx_trace and attn.size(1) == 1:
+            print('If 13')
             # when ONNX tracing a single decoder step (sequence length == 1)
             # the transpose is a no-op copy before view, thus unnecessary
             attn = attn.contiguous().view(tgt_len, bsz, embed_dim)
@@ -392,6 +404,7 @@ class MultiheadAttention(nn.Module):
         attn = self.out_proj(attn)
         attn_weights: Optional[Tensor] = None
         if need_weights:
+            print('If 14')
             attn_weights = attn_weights_float.view(
                 bsz, self.num_heads, tgt_len, src_len
             ).transpose(1, 0)

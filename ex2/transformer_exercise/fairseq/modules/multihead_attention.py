@@ -160,19 +160,6 @@ class MultiheadAttention(nn.Module):
                 assert value is not None
                 assert src_len, bsz == value.shape[:2]
 
-        print('NAAMA In multihead attention forward!, self.training=', self.training, 'mask_head=', mask_head)
-        N = query.shape[1]
-        if not self.training and mask_head is not None:
-            if not attn_mask:
-                attn_mask = torch.zeros((N * self.num_heads, query.shape[0], key.shape[0]))
-
-            for i in range(N):
-                attn_mask[i * self.num_heads + mask_head] = torch.ones((query.shape[0], key.shape[0]), dtype=torch.bool)
-
-            print('all zeros? ', torch.sum(attn_mask))
-            print('attn_mask.shape=', attn_mask.shape)
-            attn_mask = attn_mask.to(key.device)
-
         if (
                 not self.enable_fairseq_version
                 and not self.onnx_trace
@@ -369,6 +356,20 @@ class MultiheadAttention(nn.Module):
             print('attn_weights.shape=',attn_weights.shape)
             print('all zeros 2? ', torch.sum(attn_mask))
             attn_weights += attn_mask
+        if not self.training and mask_head is not None:
+            print('NAAMA In multihead attention forward!, self.training=', self.training, 'mask_head=', mask_head)
+            # N = query.shape[1]
+            # mask = torch.zeros((N * self.num_heads, query.shape[0], key.shape[0]))
+
+            for i in range(bsz):
+                attn_weights[i * self.num_heads + mask_head] = 0#torch.zeros((query.shape[0], key.shape[0]))
+
+            print('attn_weights.shape=', attn_weights.shape)
+
+
+        if mask_head is not None:
+
+            attn_weights.where()
 
         print('self.num_heads=', self.num_heads)
         if key_padding_mask is not None:

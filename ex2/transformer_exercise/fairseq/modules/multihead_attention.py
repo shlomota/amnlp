@@ -160,7 +160,7 @@ class MultiheadAttention(nn.Module):
                 assert value is not None
                 assert src_len, bsz == value.shape[:2]
 
-        print('NAAMA In multihead attention forward!, self.training=', self.training, 'self.mask_head=', self.mask_head)
+        print('NAAMA In multihead attention forward!, self.training=', self.training, 'self.mask_head=', mask_head)
         N = query.shape[1]
         if not self.training:
             if not attn_mask:

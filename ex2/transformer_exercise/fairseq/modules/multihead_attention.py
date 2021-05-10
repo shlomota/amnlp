@@ -169,6 +169,7 @@ class MultiheadAttention(nn.Module):
             for i in range(N):
                 attn_mask[i * self.num_heads + mask_head] = torch.ones((query.shape[0], key.shape[0]), dtype=torch.bool)
             print('attn_mask.shape=', attn_mask.shape)
+            attn_mask = attn_mask.to(key.device)
 
         if (
                 not self.enable_fairseq_version

@@ -160,29 +160,26 @@ class MultiheadAttention(nn.Module):
                 assert value is not None
                 assert src_len, bsz == value.shape[:2]
 
-        print('NAAMA In multihead attention forward!')
+        print('NAAMA In multihead attention forward!, self.training=', self.training, 'self.mask_head=', self.mask_head)
+        N = query.shape[1]
+        if not self.training:
+            if not attn_mask:
+                attn_mask = torch.zeros((N * self.num_heads, query.shape[0], key.shape[0]))
+
+            for i in range(N):
+                attn_mask[i * self.num_heads + mask_head] = torch.ones((query.shape[0], key.shape[0]), dtype=torch.bool)
+
         if (
-            not self.enable_fairseq_version
-            and not self.onnx_trace
-            and not is_tpu  # don't use PyTorch version on TPUs
-            and incremental_state is None
-            and not static_kv
-            # A workaround for quantization to work. Otherwise JIT compilation
-            # treats bias in linear module as method.
-            and not torch.jit.is_scripting()
+                not self.enable_fairseq_version
+                and not self.onnx_trace
+                and not is_tpu  # don't use PyTorch version on TPUs
+                and incremental_state is None
+                and not static_kv
+                # A workaround for quantization to work. Otherwise JIT compilation
+                # treats bias in linear module as method.
+                and not torch.jit.is_scripting()
         ):
             assert key is not None and value is not None
-            print('NAAMAAA self.training=', self.training)
-            if not self.training:
-                #mask a head
-                print('NAAMAAAA self.mask_head=', self.mask_head)
-                N = query.shape[1]
-                if not attn_mask:
-                    attn_mask = torch.zeros((N*self.num_heads, query.shape[0], key.shape[0]))
-
-                for i in range(N):
-                    attn_mask[i * self.num_heads + mask_head] = torch.ones((query.shape[0], key.shape[0]), dtype=torch.bool)
-
             return F.multi_head_attention_forward(
                 query,
                 key,
@@ -205,7 +202,7 @@ class MultiheadAttention(nn.Module):
                 q_proj_weight=self.q_proj.weight,
                 k_proj_weight=self.k_proj.weight,
                 v_proj_weight=self.v_proj.weight,
-            )
+                )
 
 
         if incremental_state is not None:
@@ -219,6 +216,7 @@ class MultiheadAttention(nn.Module):
                     key = value = None
         else:
             saved_state = None
+
 
         if self.self_attention:
             print('If 3')
@@ -264,21 +262,21 @@ class MultiheadAttention(nn.Module):
 
         q = (
             q.contiguous()
-            .view(tgt_len, bsz * self.num_heads, self.head_dim)
-            .transpose(0, 1)
+                .view(tgt_len, bsz * self.num_heads, self.head_dim)
+                .transpose(0, 1)
         )
         if k is not None:
             print('If 7')
             k = (
                 k.contiguous()
-                .view(-1, bsz * self.num_heads, self.head_dim)
-                .transpose(0, 1)
+                    .view(-1, bsz * self.num_heads, self.head_dim)
+                    .transpose(0, 1)
             )
         if v is not None:
             v = (
                 v.contiguous()
-                .view(-1, bsz * self.num_heads, self.head_dim)
-                .transpose(0, 1)
+                    .view(-1, bsz * self.num_heads, self.head_dim)
+                    .transpose(0, 1)
             )
 
         if saved_state is not None:

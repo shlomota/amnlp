@@ -358,7 +358,7 @@ class MultiheadAttention(nn.Module):
 
         attn_weights = torch.bmm(q, k.transpose(1, 2))
         attn_weights = self.apply_sparse_mask(attn_weights, tgt_len, src_len, bsz)
-
+        print('q.shape=', q.shape, 'k.shape=', k.shape, 'bsz', bsz, 'tgt_len=', tgt_len, 'src_len=', src_len)
         assert list(attn_weights.size()) == [bsz * self.num_heads, tgt_len, src_len]
 
         if attn_mask is not None:

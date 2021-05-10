@@ -162,7 +162,7 @@ class MultiheadAttention(nn.Module):
 
         print('NAAMA In multihead attention forward!, self.training=', self.training, 'self.mask_head=', mask_head)
         N = query.shape[1]
-        if not self.training:
+        if not self.training and self.mask_head is not None:
             if not attn_mask:
                 attn_mask = torch.zeros((N * self.num_heads, query.shape[0], key.shape[0]))
 

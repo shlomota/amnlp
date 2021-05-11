@@ -11,7 +11,7 @@ Student 2:
 Student 3:
 * Name: Shlomo Tannor
 * ID: 314389248
-* Username: 
+* Username: shlomotannor
 
 Now, for each log file that you need to submit, you will need to write its last 3 lines. For example, this is what we got for `baseline_gen.log`:
 ```txt

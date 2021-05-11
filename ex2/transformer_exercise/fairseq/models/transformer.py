@@ -421,7 +421,7 @@ class TransformerEncoder(FairseqEncoder):
         else:
             self.layers = nn.ModuleList([])
 
-        if args.enc_layer_configuration:
+        if args.enc_layer_configuration and args.encoder_layers == 4:
             args.encoder_layers *= 2
         self.layers.extend(
             [self.build_encoder_layer(args, index=i) for i in range(args.encoder_layers)]

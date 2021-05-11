@@ -436,6 +436,8 @@ class TransformerEncoder(FairseqEncoder):
     def build_encoder_layer(self, args, index=-1):
         #aaaaa
         if args.enc_layer_configuration:
+            print(args.enc_layer_configuration)
+            print(index)
             layer = TransformerEncoderLayer(args, args.enc_layer_configuration[index])
         else:
             layer = TransformerEncoderLayer(args)

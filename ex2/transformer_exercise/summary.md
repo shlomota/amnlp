@@ -71,10 +71,14 @@ rows are transformer layer number and columns are head number
 
 3 last lines from the sandwich_train.log file: 
 ```txt
-<write here>
+2021-05-11 15:35:02 | INFO | fairseq_cli.train | end of epoch 50 (average epoch stats below)
+2021-05-11 15:35:02 | INFO | train | epoch 050 | loss 3.975 | nll_loss 2.548 | ppl 5.85 | wps 31121.1 | ups 2.99 | wpb 10419.8 | bsz 422.8 | num_updates 18950 | lr 0.000229718 | gnorm 0.605 | train_wall 69 | gb_free 8.9 | wall 6269
+2021-05-11 15:35:02 | INFO | fairseq_cli.train | done training in 6259.9 seconds
 ```
 
 3 last lines from the sandwich_gen.log file: 
 ```txt
-<write here>
+2021-05-11 16:59:34 | INFO | fairseq_cli.generate | NOTE: hypothesis and token scores are output in base 2
+2021-05-11 16:59:34 | INFO | fairseq_cli.generate | Translated 7,283 sentences (165,860 tokens) in 43.7s (166.70 sentences/s, 3796.30 tokens/s)
+Generate valid with beam=5: BLEU4 = 33.25, 68.7/42.4/28.1/19.1 (BP=0.940, ratio=0.942, syslen=139562, reflen=148229)
 ```

@@ -82,3 +82,11 @@ rows are transformer layer number and columns are head number
 2021-05-11 16:59:34 | INFO | fairseq_cli.generate | Translated 7,283 sentences (165,860 tokens) in 43.7s (166.70 sentences/s, 3796.30 tokens/s)
 Generate valid with beam=5: BLEU4 = 33.25, 68.7/42.4/28.1/19.1 (BP=0.940, ratio=0.942, syslen=139562, reflen=148229)
 ```
+
+
+Answer regarding masking attention heads:
+Generally, we see that there are many heads that can be removed without hurting the performance. The most critical head is in the first layer of the enc-dec section (33->17 BLEU score). Additionally, there are a few heads in the last two layers of the enc-enc that hurt performance somewhat, while in the dec-dec section none of the maskings significantly affected the performance. This is in line with the findings in the paper, where there was a single crucial head in the enc-dec section (removal caused a decrease of 13 BLEU points). Next in significance, according to the papere, was removal of heads in the enc-enc, and finally, removing heads in the dec-dec section had no major according to the paper as well.
+
+Answer regarding sandwich transformer:
+As we see the performance didn't change significantly. In the original architecture we had 33.46 BLEU4, while in the sandwich architecure we got 33.25 BLEU4 score.
+Regarding number of learned parameters, the number of trained parameters is identical since all we did was rearrange the layers. As to runtime, the sandwich architecture took a little longer to train (6300 seconds vs. 5700 seconds). This is probably due to the fact that there is more overhead in our implementation of the sandwich architecture, since we have "double" the amount of layers, since each layer is either linear or MHA, while in the original architecture a single layer consisted of both.
